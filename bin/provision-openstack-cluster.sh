@@ -9,8 +9,8 @@ USER_DATA=$CONTRIB_DIR/coreos/user-data
 NETWORK=${NETWORK:-docker_internal_net}
 SECGROUP=${SECGROUP:-kubernetes_security_group}
 
-COREOS_IMAGE_ID=
-KEYPAIR=
+# COREOS_IMAGE_ID=
+# KEYPAIR=
 
 function echo_yellow {
   echo -e "\033[0;33m$1\033[0m"
@@ -25,12 +25,12 @@ function echo_green {
 }
 
 if [ -z "$KEYPAIR" ]; then
-  echo "ERROR: Keypair not set, please make sure to run 'export KEYPAIR=xxx'"
+  echo_red "ERROR: Keypair not set, please make sure to run 'export KEYPAIR=xxx'"
   exit 1
 fi
 
 if [ -z "$COREOS_IMAGE_ID" ]; then
-  echo "ERROR: CoreOS Image ID not set, please make sure to run 'export COREOS_IMAGE_ID=xxx'"
+  echo_red "ERROR: CoreOS Image ID not set, please make sure to run 'export COREOS_IMAGE_ID=xxx'"
   exit 1
 fi
 
