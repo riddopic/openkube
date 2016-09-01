@@ -6,8 +6,10 @@ THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 USER_DATA=$CONTRIB_DIR/coreos/user-data
 
-NETWORK=${NETWORK:-docker_internal_net}
 SECGROUP=${SECGROUP:-kubernetes_security_group}
+NETWORK=${NETWORK:-docker_internal_net}
+NUM_INSTANCES=${NUM_INSTANCES:-3}
+FLAVOR=${FLAVOR:-m1.small}
 
 # COREOS_IMAGE_ID=
 # KEYPAIR=
@@ -38,19 +40,6 @@ if ! which nova > /dev/null; then
   echo_red 'Please install nova and ensure it is in your $PATH .. '
   exit 1
 fi
-
-if [ -z "$3" ]; then
-  FLAVOR="m1.large"
-else
-  FLAVOR=$3
-fi
-
-if [ -z "$KUBERNETES_NUM_INSTANCES" ]; then
-  KUBERNETES_NUM_INSTANCES=3
-fi
-
-# Use the second command-line argument as KUBERNETES_NUM_INSTANCES
-NUM_INSTANCES=${2:-KUBERNETES_NUM_INSTANCES}
 
 if nova net-list | grep -q $NETWORK &> /dev/null; then
   NETWORK_ID=$(nova net-list | grep $NETWORK | \
@@ -117,8 +106,8 @@ erb "$USER_DATA/kubernetes-minion.yml.erb" \
   > "$USER_DATA/kubernetes-minion.yml"
 nova boot \
   --security-groups $SECGROUP \
-  --min-count $KUBERNETES_NUM_INSTANCES \
-  --max-count $KUBERNETES_NUM_INSTANCES \
+  --min-count $NUM_INSTANCES \
+  --max-count $NUM_INSTANCES \
   --user-data $USER_DATA/kubernetes-minion.yml \
   --description 'Kubernetes Minion' \
   --nic net-id=$NETWORK_ID \
