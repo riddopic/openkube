@@ -5,6 +5,7 @@ set -e
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 USER_DATA=$CONTRIB_DIR/coreos/user-data
+KUBERNETES_MASTER_IP=""
 
 SECGROUP=${SECGROUP:-kubernetes_security_group}
 NETWORK=${NETWORK:-docker_internal_net}
@@ -120,7 +121,7 @@ nova boot \
 sleep 10
 
 echo_yellow "Adding floating IPs .. "
-nova add-floating-ip kubernetes-master   172.16.188.72
+nova add-floating-ip kubernetes-master 172.16.188.72
 nova add-floating-ip kubernetes-minion-1 172.16.188.73
 nova add-floating-ip kubernetes-minion-2 172.16.188.74
 nova add-floating-ip kubernetes-minion-3 172.16.188.75
