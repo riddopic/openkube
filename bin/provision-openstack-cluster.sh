@@ -28,12 +28,14 @@ function echo_green {
 }
 
 if [ -z "$KEYPAIR" ]; then
-  echo_red "ERROR: Keypair not set, please make sure to run 'export KEYPAIR=xxx'"
+  echo_red "ERROR: Keypair not set!"
+  echo_yellow "Please make sure to run 'export KEYPAIR=xxx'"
   exit 1
 fi
 
 if [ -z "$COREOS_IMAGE_ID" ]; then
-  echo_red "ERROR: CoreOS Image ID not set, please make sure to run 'export COREOS_IMAGE_ID=xxx'"
+  echo_red "ERROR: CoreOS Image ID not set!"
+  echo_yellow "Please make sure to run 'export COREOS_IMAGE_ID=xxx'"
   exit 1
 fi
 
@@ -121,9 +123,9 @@ nova boot \
 sleep 10
 
 echo_yellow "Adding floating IPs .. "
-nova add-floating-ip kubernetes-master 172.16.188.72
-nova add-floating-ip kubernetes-minion-1 172.16.188.73
-nova add-floating-ip kubernetes-minion-2 172.16.188.74
-nova add-floating-ip kubernetes-minion-3 172.16.188.75
+nova add-floating-ip kubernetes-master 172.16.188.76
+nova add-floating-ip kubernetes-minion-1 172.16.188.77
+nova add-floating-ip kubernetes-minion-2 172.16.188.78
+nova add-floating-ip kubernetes-minion-3 172.16.188.79
 
 echo_green "Your Kubernetes cluster has successfully deployed to OpenStack."
