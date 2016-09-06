@@ -5,7 +5,7 @@ set -e
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 USER_DATA=$CONTRIB_DIR/coreos/user-data
-KUBERNETES_MASTER_IP=""
+KUBERNETES_MASTER_IP="192.168.111.31"
 
 SECGROUP=${SECGROUP:-kubernetes_security_group}
 NETWORK=${NETWORK:-docker_internal_net}
