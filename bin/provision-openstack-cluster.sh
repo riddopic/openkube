@@ -5,7 +5,7 @@ set -e
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 USER_DATA=$CONTRIB_DIR/coreos/user-data
-KUBERNETES_MASTER_IP=192.168.111.31
+KUBERNETES_MASTER_IP=
 
 SECGROUP=${SECGROUP:-kubernetes_security_group}
 NETWORK=${NETWORK:-docker_internal_net}
@@ -84,41 +84,18 @@ if ! nova secgroup-list | grep -q $SECGROUP &>/dev/null; then
 fi
 
 echo_yellow "Provisioning Kubernetes Master node .. "
-erb "$USER_DATA/kubernetes-master.yml.erb" \
-  > "$USER_DATA/kubernetes-master.yml"
-nova boot \
-  --security-groups $SECGROUP \
-  --user-data $USER_DATA/kubernetes-master.yml \
-  --description 'Kubernetes Master' \
-  --nic net-id=$NETWORK_ID \
-  --image $COREOS_IMAGE_ID \
-  --config-drive=true \
-  --key-name $KEYPAIR \
-  --flavor $FLAVOR \
-  kubernetes-master > /dev/null
+erb "$USER_DATA/kubernetes-master.yml.erb" > "$USER_DATA/kubernetes-master.yml"
+nova boot --security-groups $SECGROUP --user-data $USER_DATA/kubernetes-master.yml --description 'Kubernetes Master' --nic net-id=$NETWORK_ID --image $COREOS_IMAGE_ID --config-drive=true --key-name $KEYPAIR --flavor $FLAVOR kubernetes-master > /dev/null
 
 echo_yellow "Waiting for Kubernetes Master node IP .. "
 while [ -z $KUBERNETES_MASTER_IP ]; do
-  export KUBERNETES_MASTER_IP=$(nova show kubernetes-master | \
-    grep $NETWORK | sed 's/,//'g | awk '{ print $5 }')
+  export KUBERNETES_MASTER_IP=$(nova show kubernetes-master | grep $NETWORK | sed 's/,//'g | awk '{ print $5 }')
   sleep 3
 done
 
 echo_yellow "Provisioning Kubernetes Minion node .. "
-erb "$USER_DATA/kubernetes-minion.yml.erb" \
-  > "$USER_DATA/kubernetes-minion.yml"
-nova boot \
-  --security-groups $SECGROUP \
-  --min-count $NUM_INSTANCES \
-  --max-count $NUM_INSTANCES \
-  --user-data $USER_DATA/kubernetes-minion.yml \
-  --description 'Kubernetes Minion' \
-  --nic net-id=$NETWORK_ID \
-  --image $COREOS_IMAGE_ID \
-  --config-drive=true \
-  --key-name $KEYPAIR \
-  --flavor $FLAVOR \
-  kubernetes-minion > /dev/null
+erb "$USER_DATA/kubernetes-minion.yml.erb" > "$USER_DATA/kubernetes-minion.yml"
+nova boot --security-groups $SECGROUP --min-count $NUM_INSTANCES --max-count $NUM_INSTANCES --user-data $USER_DATA/kubernetes-minion.yml --description 'Kubernetes Minion' --nic net-id=$NETWORK_ID --image $COREOS_IMAGE_ID --config-drive=true --key-name $KEYPAIR --flavor $FLAVOR kubernetes-minion > /dev/null
 
 sleep 10
 
