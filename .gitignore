@@ -136,21 +136,8 @@ cscope.files
 cscope.out
 cscope.in.out
 cscope.po.out
-.bundle
-vendor/bundle
-vendor/cache
 
-terraform/build/terraform.tfvars
-terraform/build/terraform.tfstate*
-terraform/build/.terraform
-terraform/build/.terraform/terraform.tfstate*
+user-data/master.yml
+user-data/minion.yml
 
-terraform/build
-terraform/*.pem
-terraform/*.key
-terraform/.vagrant
-terraform/coreos-cluster
-.terraform/terraform.tfstate*
-init.txt
-site
 SCRATCH.md

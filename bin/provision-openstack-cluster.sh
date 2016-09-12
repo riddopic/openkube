@@ -45,20 +45,25 @@ if ! which nova > /dev/null; then
 fi
 
 if nova net-list | grep -q $NETWORK &> /dev/null; then
-  NETWORK_ID=$(nova net-list | grep $NETWORK | awk -F'|' '{gsub(/ /, "", $0); print $2}')
+  NETWORK_ID=$(nova net-list | grep $NETWORK | \
+    awk -F'|' '{gsub(/ /, "", $0); print $2}')
 else
   echo_yellow "Creating Kubernetes private network..."
   CIDR=${KUBERNETES_CIDR:-10.21.12.0/24}
   SUBNET_OPTIONS=""
 
   if [ ! -z "$KUBERNETES_DNS" ]; then
-    SUBNET_OPTIONS=$(echo $KUBERNETES_DNS | awk -F "," '{for (i=1; i<=NF; i++) printf "--dns-nameserver %s ", $i}')
+    SUBNET_OPTIONS=$(echo $KUBERNETES_DNS | \
+      awk -F "," '{for (i=1; i<=NF; i++) printf "--dns-nameserver %s ", $i}')
   fi
   
-  NETWORK_ID=$(nova net-create $NETWORK | awk '{ printf "%s", ($2 == "id" ? $4 : "")}')
+  NETWORK_ID=$(nova net-create $NETWORK | \
+    awk '{ printf "%s", ($2 == "id" ? $4 : "")}')
 
   echo_red "DEBUG: SUBNET_OPTIONS=$SUBNET_OPTIONS"
-  SUBNET_ID=$(nova subnet-create --name kubernetes_subnet $SUBNET_OPTIONS $NETWORK_ID $CIDR | awk '{ printf "%s", ($2 == "id" ? $4 : "")}')
+  SUBNET_ID=$(nova subnet-create \
+    --name kubernetes_subnet $SUBNET_OPTIONS $NETWORK_ID $CIDR | \
+    awk '{ printf "%s", ($2 == "id" ? $4 : "")}')
 fi
 
 if ! nova secgroup-list | grep -q $SECGROUP &>/dev/null; then
@@ -81,28 +86,48 @@ if ! nova secgroup-list | grep -q $SECGROUP &>/dev/null; then
 fi
 
 echo_yellow "INFO: Provisioning Kubernetes Master node .. "
-erb "$USER_DATA/kubernetes-master.yml.erb" > "$USER_DATA/kubernetes-master.yml"
-echo nova boot --security-groups "$SECGROUP" --user-data "$USER_DATA/kubernetes-master.yml" --description 'Kubernetes Master' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-master
-nova boot --security-groups "$SECGROUP" --user-data "$USER_DATA/kubernetes-master.yml" --description 'Kubernetes Master' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-master
+erb "user-data/master.yml.erb" > "user-data/master.yml"
+nova boot \
+  --security-groups "$SECGROUP" \
+  --user-data "user-data/master.yml" \
+  --description "Kubernetes Master" \
+  --nic net-id="$NETWORK_ID" \
+  --image "$COREOS_IMAGE_ID" \
+  --config-drive=true \
+  --key-name "$KEYPAIR" \
+  --flavor "$FLAVOR" \
+  master > /dev/null
 
 echo_yellow "INFO: Waiting for Kubernetes Master node IP .. "
 while [ -z $KUBERNETES_MASTER_IP ]; do
-  export KUBERNETES_MASTER_IP=$(nova show kubernetes-master | grep $NETWORK | sed 's/,//'g | awk '{ print $5 }')
+  export KUBERNETES_MASTER_IP=$(nova show master | \
+    grep $NETWORK | sed 's/,//'g | awk '{ print $5 }')
+  
   echo_red "DEBUG: KUBERNETES_MASTER_IP=$KUBERNETES_MASTER_IP"
   sleep 3
 done
 
 echo_yellow "INFO: Provisioning Kubernetes Minion node .. "
-erb "$USER_DATA/kubernetes-minion.yml.erb" > "$USER_DATA/kubernetes-minion.yml"
-echo nova boot --security-groups "$SECGROUP" --min-count "$NUM_INSTANCES" --max-count "$NUM_INSTANCES" --user-data "$USER_DATA/kubernetes-minion.yml" --description 'Kubernetes Minion' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-minion
-nova boot --security-groups "$SECGROUP" --min-count "$NUM_INSTANCES" --max-count "$NUM_INSTANCES" --user-data "$USER_DATA/kubernetes-minion.yml" --description 'Kubernetes Minion' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-minion
+erb "user-data/minion.yml.erb" > "user-data/minion.yml"
+nova boot \
+  --security-groups "$SECGROUP" \
+  --min-count "$NUM_INSTANCES" \
+  --max-count "$NUM_INSTANCES" \
+  --user-data "user-data/minion.yml" \
+  --description "Kubernetes Minion" \
+  --nic net-id="$NETWORK_ID" \
+  --image "$COREOS_IMAGE_ID" \
+  --config-drive=true \
+  --key-name "$KEYPAIR" \
+  --flavor "$FLAVOR" \
+  minion > /dev/null
 
 sleep 10
 
 echo_yellow "INFO: Adding floating IPs .. "
-nova add-floating-ip kubernetes-master 172.16.190.80
-nova add-floating-ip kubernetes-minion-1 172.16.190.81
-nova add-floating-ip kubernetes-minion-2 172.16.190.82
-nova add-floating-ip kubernetes-minion-3 172.16.190.83
+nova add-floating-ip master 172.16.190.80
+nova add-floating-ip minion-1 172.16.190.81
+nova add-floating-ip minion-2 172.16.190.82
+nova add-floating-ip minion-3 172.16.190.83
 
 echo_green "HELL-YEA! Your Kubernetes cluster has successfully deployed to OpenStack."
