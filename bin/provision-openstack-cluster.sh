@@ -82,7 +82,7 @@ fi
 
 echo_yellow "INFO: Provisioning Kubernetes Master node .. "
 erb "$USER_DATA/kubernetes-master.yml.erb" > "$USER_DATA/kubernetes-master.yml"
-echo nova boot --security-groups "$SECGROUP" --user-data "$USER_DATA/kubernetes-master.yml" --description 'Kubernetes Master' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-master > /dev/null
+echo nova boot --security-groups "$SECGROUP" --user-data "$USER_DATA/kubernetes-master.yml" --description 'Kubernetes Master' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-master
 nova boot --security-groups "$SECGROUP" --user-data "$USER_DATA/kubernetes-master.yml" --description 'Kubernetes Master' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-master > /dev/null
 
 echo_yellow "INFO: Waiting for Kubernetes Master node IP .. "
@@ -94,7 +94,7 @@ done
 
 echo_yellow "INFO: Provisioning Kubernetes Minion node .. "
 erb "$USER_DATA/kubernetes-minion.yml.erb" > "$USER_DATA/kubernetes-minion.yml"
-echo nova boot --security-groups "$SECGROUP" --min-count "$NUM_INSTANCES" --max-count "$NUM_INSTANCES" --user-data "$USER_DATA/kubernetes-minion.yml" --description 'Kubernetes Minion' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-minion > /dev/null
+echo nova boot --security-groups "$SECGROUP" --min-count "$NUM_INSTANCES" --max-count "$NUM_INSTANCES" --user-data "$USER_DATA/kubernetes-minion.yml" --description 'Kubernetes Minion' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-minion
 nova boot --security-groups "$SECGROUP" --min-count "$NUM_INSTANCES" --max-count "$NUM_INSTANCES" --user-data "$USER_DATA/kubernetes-minion.yml" --description 'Kubernetes Minion' --nic net-id="$NETWORK_ID" --image "$COREOS_IMAGE_ID" --config-drive=true --key-name "$KEYPAIR" --flavor "$FLAVOR" kubernetes-minion > /dev/null
 
 sleep 10
