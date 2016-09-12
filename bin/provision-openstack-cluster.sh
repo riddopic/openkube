@@ -5,7 +5,7 @@ set -e
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 USER_DATA=$CONTRIB_DIR/coreos/user-data
-KUBERNETES_MASTER_IP="192.168.111.31"
+KUBERNETES_MASTER_IP=192.168.111.31
 
 SECGROUP=${SECGROUP:-kubernetes_security_group}
 NETWORK=${NETWORK:-docker_internal_net}
@@ -123,9 +123,9 @@ nova boot \
 sleep 10
 
 echo_yellow "Adding floating IPs .. "
-nova add-floating-ip kubernetes-master 172.16.188.76
-nova add-floating-ip kubernetes-minion-1 172.16.188.77
-nova add-floating-ip kubernetes-minion-2 172.16.188.78
-nova add-floating-ip kubernetes-minion-3 172.16.188.79
+nova add-floating-ip kubernetes-master 172.16.190.80
+nova add-floating-ip kubernetes-minion-1 172.16.190.81
+nova add-floating-ip kubernetes-minion-2 172.16.190.82
+nova add-floating-ip kubernetes-minion-3 172.16.190.83
 
 echo_green "Your Kubernetes cluster has successfully deployed to OpenStack."
